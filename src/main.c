@@ -36,20 +36,20 @@ void main_cliente(int quant)
     //
     // após a criação de cada processo, chamar cliente_executar
     // e guardar pid do filho no vetor Ind.pid_clientes[n], com n=0,1,...
-    int counter = 0;
-    while(counter < quant){
-        //obtem pid de filho
-        int pid = fork();
-        if(pid == 0){
-            Ind.pid_clientes[counter] = getpid();
-            counter++;
-            break;
-        }else{
+    // int counter = 0;
+    // while(counter < quant){
+    //     //obtem pid de filho
+    //     int pid = fork();
+    //     if(pid == 0){
+    //         Ind.pid_clientes[counter] = getpid();
+    //         counter++;
+    //         break;
+    //     }else{
 
-        }
-    }
+    //     }
+    // }
 
-    //so_main_cliente(quant);
+    so_main_cliente(quant);
     //==============================================
 }
 
@@ -61,18 +61,18 @@ void main_rececionista(int quant)
     //
     // após a criação de cada processo, chamar rececionista_executar 
     // e guardar pid do filho no vetor Ind.pid_rececionistas[n], com n=0,1,...
-    int counter = 0;
-    while(counter < quant){
-        int pid = fork();
-        if(pid == 0){
-            Ind.pid_rececionistas[counter] = getpid();
-            counter++;
-            break;
-        }else{
+    // int counter = 0;
+    // while(counter < quant){
+    //     int pid = fork();
+    //     if(pid == 0){
+    //         Ind.pid_rececionistas[counter] = getpid();
+    //         counter++;
+    //         break;
+    //     }else{
 
-        }
-    }
-    //so_main_rececionista(quant);
+    //     }
+    // }
+    so_main_rececionista(quant);
     //==============================================
 }
 
@@ -84,20 +84,20 @@ void main_instalador(int quant)
     //
     // após a criação de cada processo, chamar instalador_executar 
     // e guardar pid do filho no vetor Ind.pid_instaladores[n], com n=0,1,...
-    int counter = 0;
-    while(counter < quant){
+    // int counter = 0;
+    // while(counter < quant){
 
-        //se eh filho cria o proccess
-        if(pid == 0){
-            Ind.pid_instaladores[counter] = getpid();
-            counter++;
-            break;
-        }else{
-            //se eh pai nao faz mais nada porque jah estah a criar o sons
-        }
+    //     //se eh filho cria o proccess
+    //     if(pid == 0){
+    //         Ind.pid_instaladores[counter] = getpid();
+    //         counter++;
+    //         break;
+    //     }else{
+    //         //se eh pai nao faz mais nada porque jah estah a criar o sons
+    //     }
 
-    }
-    //so_main_instalador(quant);
+    // }
+    so_main_instalador(quant);
     //==============================================
 }
 

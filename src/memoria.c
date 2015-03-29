@@ -15,189 +15,264 @@
 #include <limits.h>
 
 #include "main.h"
-#include "rececionista.h"
-#include "instalador.h"
-#include "cliente.h"
+#include "so.h"
 #include "memoria.h"
 #include "prodcons.h"
 #include "controlo.h"
+#include "escalonador.h"
 #include "ficheiro.h"
-#include "tempo.h"
-#include "so.h"
 
-struct indicadores Ind;     // indicadores do funcionamento do SOinstala
-struct configuracao Config; // configuração da execução do SOinstala
+struct relatorio_c BConclusao;  // buffer instalador-cliente
+struct pedido_i    BInstalacao; // buffer rececionista-instalador
+struct pedido_s    BServico;    // buffer cliente-rececionista
 
-/* main_cliente recebe como parâmetro o nº de clientes a criar */
-void main_cliente(int quant)
+//******************************************
+// CRIAR ZONAS DE MEMORIA
+//
+void * memoria_criar(char * name, int size)
 {
     //==============================================
-    // CRIAR PROCESSOS
+    // FUNÇÃO GENÉRICA DE CRIAÇÃO DE MEMÓRIA PARTILHADA
     //
-    // após a criação de cada processo, chamar cliente_executar
-    // e guardar pid do filho no vetor Ind.pid_clientes[n], com n=0,1,...
-    int counter = 0;
-    while(counter < quant){
-        //obtem pid de filho
-        int pid = fork();
-        if(pid == 0){
-            Ind.pid_clientes[counter] = getpid();
-            counter++;
-            break;
-        }else{
-
-        }
-    }
-
-    //so_main_cliente(quant);
+    return so_memoria_criar(name, size);
+    //==============================================
+}
+void memoria_criar_stock()
+{
+    //==============================================
+    // CRIAR ZONA DE MEMÓRIA PARA O STOCK DE CADO SERVICO
+    //
+    // utilizar a função genérica memoria_criar(char *,int)
+    so_memoria_criar_stock();
+    //==============================================
+}
+void memoria_criar_buffers()
+{
+    //==============================================
+    // CRIAR ZONAS DE MEMÓRIA PARA OS BUFFERS: PEDIDOS DE SERVIÇO, PEDIDOS DE INSTALAÇÃO e RELATÓRIOS DE CONCLUSÃO
+    //
+    // utilizar a função genérica memoria_criar(char *,int)
+    so_memoria_criar_buffers();
+    //==============================================
+}
+void memoria_criar_escalonador()
+{
+    //==============================================
+    // CRIAR ZONA DE MEMÓRIA PARA O MAPA DE ESCALONAMENTO
+    //
+    // utilizar a função genérica memoria_criar(char *,int)
+    so_memoria_criar_escalonador();
     //==============================================
 }
 
-/* main_rececionista recebe como parâmetro o nº de rececionistas a criar */
-void main_rececionista(int quant)
+void memoria_terminar(char * name, void * ptr, int size)
 {
     //==============================================
-    // CRIAR PROCESSOS
+    // FUNÇÃO GENÉRICA DE DESTRUIÇÃO DE MEMÓRIA PARTILHADA
     //
-    // após a criação de cada processo, chamar rececionista_executar 
-    // e guardar pid do filho no vetor Ind.pid_rececionistas[n], com n=0,1,...
-    int counter = 0;
-    while(counter < quant){
-        int pid = fork();
-        if(pid == 0){
-            Ind.pid_rececionistas[counter] = getpid();
-            counter++;
-            break;
-        }else{
-
-        }
-    }
-    //so_main_rececionista(quant);
+    so_memoria_terminar(name, ptr, size);
     //==============================================
 }
 
-/* main_instalador recebe como parâmetro o nº de instaladores a criar */
-void main_instalador(int quant)
+//******************************************
+// MEMORIA_DESTRUIR
+//
+void memoria_destruir()
 {
     //==============================================
-    // CRIAR PROCESSOS
+    // DESTRUIR MAPEAMENTO E NOME DE PÁGINAS DE MEMÓRIA
     //
-    // após a criação de cada processo, chamar instalador_executar 
-    // e guardar pid do filho no vetor Ind.pid_instaladores[n], com n=0,1,...
-    int counter = 0;
-    while(counter < quant){
-        
-        //cria processo
-        int pid = fork();
-
-        //se eh filho cria o proccess
-        if(pid == 0){
-            Ind.pid_instaladores[counter] = getpid();
-            counter++;
-            break;
-        }else{
-            //se eh pai nao faz mais nada porque jah estah a criar o sons
-        }
-
-    }
-    //so_main_instalador(quant);
+    // utilizar a função genérica memoria_terminar(char *,void *,int)
+    so_memoria_destruir();
     //==============================================
 }
 
-int main(int argc, char* argv[])
+
+
+//******************************************
+// MEMORIA_PEDIDO_S_ESCREVE
+//
+void memoria_pedido_s_escreve (int id, struct servico *pServico)
 {
-    int n,result;
-    char *ficEntrada=NULL;
-    char *ficSaida=NULL;
-    char *ficLog=NULL;
-    long intervalo=0;
+    prodcons_pedido_s_produzir_inicio();
 
     //==============================================
-    // TRATAR PARÂMETROS DE ENTRADA
-    // parâmetro obrigatório: ficheiro_configuracao
-    // parâmetros opcionais:
-    //   ficheiro_resultados
-    //   -l ficheiro_log
-    //   -t intervalo(us)    // us: microsegundos
+    // ESCREVER PEDIDO DE SERVIÇO NO BUFFER PEDIDO DE SERVIÇOS
     //
-    // para qualquer parâmetro desconhecido ou falta de parâmetros
-    // escrever mensagem de utilização "Como usar", dar exemplo e terminar
-    intervalo = so_main_args(argc, argv, &ficEntrada, &ficSaida, &ficLog);
+    so_memoria_pedido_s_escreve (id, pServico);
     //==============================================
-
-    printf("\n---------------------------");
-    printf("\n--- Oficina SOinstala ---");
-    printf("\n---------------------------\n");
-
-    // Ler dados de entrada
-    ficheiro_iniciar(ficEntrada,ficSaida,ficLog);
-
-    // criar zonas de memória e semáforos
-    memoria_criar_buffers();
-    prodcons_criar_buffers();
-    controlo_criar();
-
-    // Criar estruturas para indicadores e guardar stock inicial
-    memoria_criar_indicadores();
-
-    printf("\n*** Abrir SOinstala\n");
-    controlo_abrir_soinstala();
-
-    // Registar início de operação e armar alarme
-    tempo_iniciar(intervalo);
-
-    //
-    // Iniciar sistema
-    //
-
-    // Criar rececionistas
-    main_rececionista(Config.RECECIONISTAS);
-    // Criar instalador
-    main_instalador(Config.INSTALADORES);
-    // Criar clientes
-    main_cliente(Config.CLIENTES);
     
-    //criar buffer circular
+    prodcons_pedido_s_produzir_fim();
+    
+    // informar rececionista de pedido de servico
+    controlo_cliente_submete_pedido(id);
 
-
-    //==============================================
-    // ESPERAR PELA TERMINAÇÃO DOS CLIENTES E ATUALIZAR INDICADORES
-    //
-    // esperar e incrementar o indicador de clientes
-    // Ind.servicos_obtidos_pelos_clientes[n], n=0,1,...
-    // com o estado devolvido pela terminação do processo
-    so_main_wait_clientes();
-    //==============================================
-
-    printf("*** Fechar SOinstala\n\n");
-    controlo_fechar_soinstala();
-
-    //==============================================
-    // ESPERAR PELA TERMINAÇÃO DOS CLIENTES E ATUALIZAR INDICADORES
-    //
-    // esperar e incrementar o indicador de rececionistas
-    // Ind.clientes_atendidos_pelos_rececionistas[n], n=0,1,...
-    // com o estado devolvido pela terminação do processo
-    so_main_wait_rececionistas();
-    //==============================================
-
-    //==============================================
-    // ESPERAR PELA TERMINAÇÃO DOS CLIENTES E ATUALIZAR INDICADORES
-    //
-    // esperar e incrementar o indicador de instaladores
-    // Ind.clientes_atendidos_pelos_instaladores[n], n=0,1,...
-    // com o estado devolvido pela terminação do processo
-    so_main_wait_instaladores();
-    //==============================================
-
-    printf("*** Indicadores\n");
-    so_escreve_indicadores();
-
-    // destruir zonas de memória e semáforos
-    ficheiro_destruir();
-    controlo_destruir();
-    prodcons_destruir();
-    memoria_destruir();
-
-    return 0;
+    // registar hora do pedido de servico
+    tempo_registar(&BServico.buffer[BServico.ptr->in].hora_servico);
+    
+    // log
+    ficheiro_escrever_log_ficheiro(1,id);
 }
+//******************************************
+// MEMORIA_PEDIDO_S_LE
+//
+int memoria_pedido_s_le (int id, struct servico *pServico)
+{
+    // testar se existem clientes e se o SOinstala esta aberto
+    if(controlo_rececionista_aguarda_pedido(id) == 0)
+        return 0;
+
+    prodcons_pedido_s_consumir_inicio();
+    
+    //==============================================
+    // LER PEDIDO DE SERVIÇO DO BUFFER PEDIDO DE SERVIÇOS
+    //
+    so_memoria_pedido_s_le (id, pServico);
+    //==============================================
+
+    // testar se existe stock do servico pedido pelo cliente
+    if(prodcons_atualizar_stock(pServico->id) == 0) {
+        pServico->disponivel = 0;
+    prodcons_pedido_s_consumir_fim();
+        return 2;
+    } else
+        pServico->disponivel = 1;
+    
+    prodcons_pedido_s_consumir_fim();
+
+    // log
+    ficheiro_escrever_log_ficheiro(2,id);
+    
+    return 1;
+}
+
+
+
+//******************************************
+// MEMORIA_PEDIDO_I_ESCREVE
+//
+void memoria_pedido_i_escreve (int id, struct servico *pServico)
+{
+    int pos,instalador;
+    
+    prodcons_pedido_i_produzir_inicio();
+    
+    // decidir a que instalador se destina
+    instalador = escalonador_obter_instalador(id, pServico->id);
+
+    //==============================================
+    // ESCREVER PEDIDO NO BUFFER DE PEDIDOS DE INSTALACAO
+    //
+    pos = so_memoria_pedido_i_escreve (id, pServico, instalador);
+    //==============================================
+
+    prodcons_pedido_i_produzir_fim();
+
+    // informar instalador respetivo de pedido de instalacao
+    controlo_rececionista_submete_pedido(instalador);
+
+    // registar hora pedido (instalacao)
+    tempo_registar(&BConclusao.buffer[pos].hora_instalacao);
+    
+    // log
+    ficheiro_escrever_log_ficheiro(3,id);
+}
+//******************************************
+// MEMORIA_PEDIDO_LE
+//
+int memoria_pedido_i_le (int id, struct servico *pServico)
+{
+    // testar se existem pedidos e se o SOinstala esta aberto
+    if(controlo_instalador_aguarda_pedido(id) == 0)
+        return 0;
+    
+    prodcons_pedido_i_consumir_inicio();
+    
+    //==============================================
+    // LER PEDIDO DO BUFFER DE PEDIDOS DE INSTALACAO
+    //
+    so_memoria_pedido_i_le (id, pServico);
+    //==============================================
+
+    prodcons_pedido_i_consumir_fim();
+
+    // log
+    ficheiro_escrever_log_ficheiro(4,id);
+    
+    return 1;
+}
+
+
+
+//******************************************
+// MEMORIA_RELATORIO_C_ESCREVE
+//
+void memoria_relatorio_c_escreve (int id, struct servico *pServico)
+{
+    int pos;
+
+    prodcons_relatorio_c_produzir_inicio();
+
+    //==============================================
+    // ESCREVER RELATORIO DE CONCLUSAO NO BUFFER DE RELATORIOS DE CONCLUSAO
+    //
+    pos = so_memoria_relatorio_c_escreve (id, pServico);
+    //==============================================
+
+    prodcons_relatorio_c_produzir_fim();
+    
+    // informar cliente de que o relatorio de conclusao esta pronto
+    controlo_instalador_submete_relatorio(pServico->cliente);
+
+    // registar hora pronta (relatorio)
+    tempo_registar(&BConclusao.buffer[pos].hora_conclusao);
+    
+    // log
+    ficheiro_escrever_log_ficheiro(5,id);
+}
+//******************************************
+// MEMORIA_RELATORIO_C_LE
+//
+void memoria_relatorio_c_le (int id, struct servico *pServico)
+{
+    int n;
+    
+    // aguardar relatorio
+    controlo_cliente_aguarda_relatorio(pServico->cliente);
+    
+    prodcons_relatorio_c_consumir_inicio();
+    
+    //==============================================
+    // LER RELATORIO DO BUFFER DE RELATORIOS DE CONCLUSAO
+    //
+    so_memoria_relatorio_c_le (id, pServico);
+    //==============================================
+
+    prodcons_relatorio_c_consumir_fim();
+
+    // log
+    ficheiro_escrever_log_ficheiro(6,id);
+}
+
+
+
+//******************************************
+// MEMORIA_CRIAR_INDICADORES
+//
+void memoria_criar_indicadores()
+{
+    //==============================================
+    // CRIAR ZONAS DE MEMÓRIA PARA OS INDICADORES
+    //
+    // criação dinâmica de memória
+    // para cada campo da estrutura indicadores
+    so_memoria_criar_indicadores();
+    // iniciar indicadores relevantes:
+    // - Ind.stock_inicial
+    // - Ind.clientes_atendidos_pelos_rececionistas
+    // - Ind.clientes_atendidos_pelos_instaladores
+    // - Ind.servicos_obtidos_pelos_clientes
+    so_memoria_iniciar_indicadores();
+    //==============================================
+}
+
