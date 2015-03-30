@@ -36,16 +36,22 @@ void main_cliente(int quant)
     //
     // após a criação de cada processo, chamar cliente_executar
     // e guardar pid do filho no vetor Ind.pid_clientes[n], com n=0,1,...
+    
     // int counter = 0;
+    // int pid;
     // while(counter < quant){
-    //     //obtem pid de filho
-    //     int pid = fork();
-    //     if(pid == 0){
-    //         Ind.pid_clientes[counter] = getpid();
-    //         counter++;
+    //     pid = fork();
+    //     if(pid == -1){
+    //         printf("Erro na criação de cliente!");
+    //     }else if(pid == 0){
+    //         // estamos dentro do filho
+    //         cliente_executar(getpid());
     //         break;
+    //         // Fazer exit(something)?
     //     }else{
-
+    //         // estamos dentro do pai
+    //         Ind.pid_clientes[counter] = pid;
+    //         counter++;
     //     }
     // }
 
@@ -61,17 +67,25 @@ void main_rececionista(int quant)
     //
     // após a criação de cada processo, chamar rececionista_executar 
     // e guardar pid do filho no vetor Ind.pid_rececionistas[n], com n=0,1,...
+    
     // int counter = 0;
+    // int pid;
     // while(counter < quant){
-    //     int pid = fork();
-    //     if(pid == 0){
-    //         Ind.pid_rececionistas[counter] = getpid();
-    //         counter++;
+    //     pid = fork();
+    //     if(pid == -1){
+    //         printf("Erro na criação de rececionista!");
+    //     }else if(pid == 0){
+    //         // estamos dentro do filho
+    //         rececionista_executar(getpid());
     //         break;
+    //         // Fazer exit(something)?
     //     }else{
-
+    //         // estamos dentro do pai
+    //         Ind.pid_rececionistas[counter] = pid;
+    //         counter++;
     //     }
     // }
+    // 
     so_main_rececionista(quant);
     //==============================================
 }
@@ -84,19 +98,25 @@ void main_instalador(int quant)
     //
     // após a criação de cada processo, chamar instalador_executar 
     // e guardar pid do filho no vetor Ind.pid_instaladores[n], com n=0,1,...
+    
     // int counter = 0;
+    // int pid;
     // while(counter < quant){
-
-    //     //se eh filho cria o proccess
-    //     if(pid == 0){
-    //         Ind.pid_instaladores[counter] = getpid();
-    //         counter++;
+    //     pid = fork();
+    //     if(pid == -1){
+    //         printf("Erro na criação de instalador!");
+    //     }else if(pid == 0){
+    //         // estamos dentro do filho
+    //         instalador_executar(getpid());
     //         break;
+    //         // Fazer exit(something)?
     //     }else{
-    //         //se eh pai nao faz mais nada porque jah estah a criar o sons
+    //         // estamos dentro do pai
+    //         Ind.pid_instaladores[counter] = pid;
+    //         counter++;
     //     }
-
     // }
+    
     so_main_instalador(quant);
     //==============================================
 }
