@@ -31,30 +31,39 @@ struct configuracao Config; // configuração da execução do SOinstala
 /* main_cliente recebe como parâmetro o nº de clientes a criar */
 void main_cliente(int quant)
 {
+
+
     //==============================================
     // CRIAR PROCESSOS
     //
     // após a criação de cada processo, chamar cliente_executar
     // e guardar pid do filho no vetor Ind.pid_clientes[n], com n=0,1,...
-    
-    // int counter = 0;
-    // int pid;
-    // while(counter < quant){
-    //     pid = fork();
-    //     if(pid == -1){
-    //         printf("Erro na criação de cliente!");
-    //     }else if(pid == 0){
-    //         // estamos dentro do filho
-    //         cliente_executar(getpid());
-    //         break;
-    //         // Fazer exit(something)?
-    //     }else{
-    //         // estamos dentro do pai
-    //         Ind.pid_clientes[counter] = pid;
-    //         counter++;
+
+    // index de arrays para criacao de processos
+    // int counter;
+    // for( counter = 0;  counter < quant; counter++)
+    // {
+    //     int pid = fork();
+        
+    //     if(pid == -1)
+    //     {
+    //         perror("erro processo");
+    //         exit(1);
+    //     }else
+    //     {
+    //         if(pid == 0)
+    //         {
+                
+    //             int ret = cliente_executar(counter);
+    //             exit(ret);
+    //         }else
+    //         {
+    //             Ind.pid_clientes[counter] = pid;
+                
+    //         }
+        
     //     }
     // }
-
     so_main_cliente(quant);
     //==============================================
 }
@@ -62,30 +71,38 @@ void main_cliente(int quant)
 /* main_rececionista recebe como parâmetro o nº de rececionistas a criar */
 void main_rececionista(int quant)
 {
+
     //==============================================
     // CRIAR PROCESSOS
     //
     // após a criação de cada processo, chamar rececionista_executar 
     // e guardar pid do filho no vetor Ind.pid_rececionistas[n], com n=0,1,...
-    
-    // int counter = 0;
-    // int pid;
-    // while(counter < quant){
-    //     pid = fork();
-    //     if(pid == -1){
-    //         printf("Erro na criação de rececionista!");
-    //     }else if(pid == 0){
-    //         // estamos dentro do filho
-    //         rececionista_executar(getpid());
-    //         break;
-    //         // Fazer exit(something)?
-    //     }else{
-    //         // estamos dentro do pai
-    //         Ind.pid_rececionistas[counter] = pid;
-    //         counter++;
+
+    // index de arrays para criacao de processos
+    // int counter;
+    // for( counter = 0;  counter < quant; counter++)
+    // {
+    //     int pid = fork();
+        
+    //     if(pid == -1)
+    //     {
+    //         perror("erro processo");
+    //         exit(1);
+    //     }else
+    //     {
+    //         if(pid == 0)
+    //         {
+                
+    //             int ret = rececionista_executar(counter);
+    //             exit(ret);
+    //         }else
+    //         {
+    //             Ind.pid_rececionistas[counter] = pid;
+                
+    //         }
+        
     //     }
     // }
-    // 
     so_main_rececionista(quant);
     //==============================================
 }
@@ -93,30 +110,38 @@ void main_rececionista(int quant)
 /* main_instalador recebe como parâmetro o nº de instaladores a criar */
 void main_instalador(int quant)
 {
+
     //==============================================
     // CRIAR PROCESSOS
     //
     // após a criação de cada processo, chamar instalador_executar 
     // e guardar pid do filho no vetor Ind.pid_instaladores[n], com n=0,1,...
-    
-    // int counter = 0;
-    // int pid;
-    // while(counter < quant){
-    //     pid = fork();
-    //     if(pid == -1){
-    //         printf("Erro na criação de instalador!");
-    //     }else if(pid == 0){
-    //         // estamos dentro do filho
-    //         instalador_executar(getpid());
-    //         break;
-    //         // Fazer exit(something)?
-    //     }else{
-    //         // estamos dentro do pai
-    //         Ind.pid_instaladores[counter] = pid;
-    //         counter++;
+
+    // index de arrays para criacao de processos
+    // int counter;
+    // for( counter = 0;  counter < quant; counter++)
+    // {
+    //     int pid = fork();
+        
+    //     if(pid == -1)
+    //     {
+    //         perror("erro processo");
+    //         exit(1);
+    //     }else
+    //     {
+    //         if(pid == 0)
+    //         {
+                
+    //             int ret = instalador_executar(counter);
+    //             exit(ret);
+    //         }else
+    //         {
+    //             Ind.pid_instaladores[counter] = pid;
+                
+    //         }
+        
     //     }
     // }
-    
     so_main_instalador(quant);
     //==============================================
 }
@@ -139,6 +164,21 @@ int main(int argc, char* argv[])
     //
     // para qualquer parâmetro desconhecido ou falta de parâmetros
     // escrever mensagem de utilização "Como usar", dar exemplo e terminar
+
+    //erro no parametros
+    if(argc < 2)
+    {
+        printf("Como usar: ./soinstala ../testes/in/cenario1 ../testes/out/cenario1 -l cenario1.log -t 1000\n");
+        exit(1);
+    }
+    if(argc > 2){
+        ficEntrada = argv[1];       //ficheiro de config
+        ficSaida = argv[2];     //ficheiro de output
+        ficLog = argv[4];       //ficheiro de logs
+        intervalo = atoi(argv[6]);  //intervalo
+    }else if(argc == 2){
+        ficEntrada = argv[1];
+    }
     intervalo = so_main_args(argc, argv, &ficEntrada, &ficSaida, &ficLog);
     //==============================================
 
@@ -181,6 +221,14 @@ int main(int argc, char* argv[])
     // esperar e incrementar o indicador de clientes
     // Ind.servicos_obtidos_pelos_clientes[n], n=0,1,...
     // com o estado devolvido pela terminação do processo
+    // int cur;    
+    // for(cur = 0; cur < Config.CLIENTES; cur++)
+    // {
+    //     int status;
+    //     waitpid(Ind.pid_clientes[cur], &status, 0);
+    //     printf("WAITING FOR CLIENTES: %d\n", Ind.pid_clientes[cur]);
+    //     Ind.servicos_obtidos_pelos_clientes[cur] += status;
+    // }
     so_main_wait_clientes();
     //==============================================
 
@@ -193,6 +241,13 @@ int main(int argc, char* argv[])
     // esperar e incrementar o indicador de rececionistas
     // Ind.clientes_atendidos_pelos_rececionistas[n], n=0,1,...
     // com o estado devolvido pela terminação do processo
+    // for(cur = 0; cur < Config.RECECIONISTAS; cur++)
+    // {
+    //     int status;
+    //     waitpid(Ind.pid_rececionistas[cur], &status, 0);
+    //     printf("WAITING FOR RECECIONISTA: %d\n", Ind.pid_rececionistas[cur]);
+    //     Ind.clientes_atendidos_pelos_rececionistas[cur] += status;
+    // }
     so_main_wait_rececionistas();
     //==============================================
 
@@ -202,6 +257,13 @@ int main(int argc, char* argv[])
     // esperar e incrementar o indicador de instaladores
     // Ind.clientes_atendidos_pelos_instaladores[n], n=0,1,...
     // com o estado devolvido pela terminação do processo
+    // for(cur = 0; cur < Config.INSTALADORES; cur++)
+    // {
+    //     int status;
+    //     waitpid(Ind.pid_instaladores[cur], &status, 0);
+    //     printf("WAITING FOR INSTALADOR: %d\n", Ind.pid_instaladores[cur]);
+    //     Ind.clientes_atendidos_pelos_instaladores[cur] += status;
+    // }
     so_main_wait_instaladores();
     //==============================================
 
