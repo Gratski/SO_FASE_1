@@ -70,7 +70,7 @@ void * memoria_criar(char * name, int size)
     //     exit(3);
     // } 
 
-    printf("------------CRIA---------- %s - %d\n", name, size);
+    // printf("------------CRIA---------- %s - %d\n", name, size);
 
     // return ptr;
 
@@ -132,7 +132,7 @@ void memoria_criar_buffers()
     //
     // utilizar a função genérica memoria_criar(char *,int)
 
-    int size_servico = ((sizeof(int) * 5) + (sizeof(long) + sizeof(time_t)) * 3);
+    int size_servico = (sizeof(struct servico));
 
     BConclusao.buffer = memoria_criar("shm_relatorio_c_buffer", (size_servico * Config.BUFFER_CONCLUSAO));
     BConclusao.ptr = memoria_criar("shm_relatorio_c_ptr", (sizeof(int) * Config.BUFFER_CONCLUSAO));
@@ -186,7 +186,7 @@ void memoria_terminar(char * name, void * ptr, int size)
         exit(8);
     } 
 
-    printf("------------TERMINA---------- %s - %d\n", name, size);
+    // printf("------------TERMINA---------- %s - %d\n", name, size);
 
     // so_memoria_terminar(name, ptr, size);
     //==============================================
@@ -202,18 +202,18 @@ void memoria_destruir()
     //
     // utilizar a função genérica memoria_terminar(char *,void *,int)
 
-    // memoria_terminar("shm_relatorio_c_ptr", BConclusao.ptr, 40);
-    // memoria_terminar("shm_relatorio_c_buffer", BConclusao.buffer, 440);
-    // memoria_terminar("shm_pedido_i_ptr", BInstalacao.ptr, 40);
-    // memoria_terminar("shm_pedido_i_buffer", BInstalacao.buffer, 440);
-    // memoria_terminar("shm_pedido_s_ptr", BServico.ptr, 40);
-    // memoria_terminar("shm_pedido_s_buffer", BServico.buffer, 440);
-    // memoria_terminar("shm_escalonador", Escalonamento.ptr, 24);
-    // memoria_terminar("shm_stock", Config.stock, 20);
-    // memoria_terminar("/shm_cond_soinstala", Config.stock, 160);
-    // memoria_terminar("/shm_servicos_instaladores", Config.stock, 24);
+    memoria_terminar("shm_relatorio_c_ptr", BConclusao.ptr, (sizeof(int) * Config.BUFFER_CONCLUSAO));
+    memoria_terminar("shm_relatorio_c_buffer", BConclusao.buffer, (sizeof(struct servico) * Config.BUFFER_CONCLUSAO));
+    memoria_terminar("shm_pedido_i_ptr", BInstalacao.ptr, (sizeof(int) * Config.BUFFER_INSTALACAO));
+    memoria_terminar("shm_pedido_i_buffer", BInstalacao.buffer, (sizeof(struct servico) * Config.BUFFER_INSTALACAO));
+    memoria_terminar("shm_pedido_s_ptr", BServico.ptr, (sizeof(struct ponteiros) * Config.BUFFER_SERVICO));
+    memoria_terminar("shm_pedido_s_buffer", BServico.buffer, (sizeof(struct servico) * Config.BUFFER_SERVICO));
+    memoria_terminar("shm_escalonador", Escalonamento.ptr, (sizeof(int) * Config.SERVICOS * Config.INSTALADORES));
+    memoria_terminar("shm_stock", Config.stock, (sizeof(int) * Config.SERVICOS));
+    //memoria_terminar("/shm_cond_soinstala", Config.stock, 160);
+    //memoria_terminar("/shm_servicos_instaladores", Config.stock, 24);
 
-    so_memoria_destruir();
+    //so_memoria_destruir();
     //==============================================
 }
 
@@ -238,10 +238,12 @@ void memoria_pedido_s_escreve (int id, struct servico *pServico)
     //==============================================
     // ESCREVER PEDIDO DE SERVIÇO NO BUFFER PEDIDO DE SERVIÇOS
     //
-
-    BServico.buffer = &(*pServico);
-    BServico.ptr.in = BServico.ptr.in + 1;
-    // BServico.buffer.cliente = *pServico.cliente;
+    
+    // printf("Pointer servico1: %d\n", BServico.ptr->in);
+    BServico.buffer[BServico.ptr->in].id = pServico->id;
+    BServico.buffer[BServico.ptr->in].cliente = pServico->cliente;
+    BServico.ptr->in = BServico.ptr->in + 1;
+    // printf("Pointer servico2: %d\n", BServico.ptr->in);
 
     // so_memoria_pedido_s_escreve (id, pServico);
     //==============================================
@@ -264,7 +266,7 @@ void memoria_pedido_s_escreve (int id, struct servico *pServico)
 // id - identificador do recepcionista
 //
 // parâmetros de saída:
-// pServiço (campos cliente, id, hora_servico.tv_sec, hora_servico.tv_nsec)
+// pServico (campos cliente, id, hora_servico.tv_sec, hora_servico.tv_nsec)
 //
 // altera:
 // BServiço 
@@ -279,13 +281,36 @@ int memoria_pedido_s_le (int id, struct servico *pServico)
     //==============================================
     // LER PEDIDO DE SERVIÇO DO BUFFER PEDIDO DE SERVIÇOS
     //
-    so_memoria_pedido_s_le (id, pServico);
+
+    
+    BServico.buffer[BServico.ptr->out].rececionista = id;
+    BServico.buffer[BServico.ptr->out].hora_servico.tv_sec = 50;
+    BServico.buffer[BServico.ptr->out].hora_servico.tv_nsec = 50;
+
+    // pServico->cliente = BServico.buffer[BServico.ptr->out].cliente;
+    // pServico->id = BServico.buffer[BServico.ptr->out].id;
+    // pServico->disponivel = BServico.buffer[BServico.ptr->out].disponivel;
+    // pServico->rececionista = BServico.buffer[BServico.ptr->out].rececionista;
+    // pServico->hora_servico.tv_sec = 50;
+    // pServico->hora_servico.tv_nsec = 50;
+
+    *pServico = BServico.buffer[BServico.ptr->out];
+
+    // FAZER CHECK CIRCULAR -> Mandar out para o inicio se estiver no fim do array
+    // find free spot
+    // if(BServico.ptr == Config.BUFFER_SERVICO){
+    //     BServico.ptr->out = BServico.ptr = 0;
+    // }else{
+        BServico.ptr->out = BServico.ptr->out + 1;
+    // }
+
+    // so_memoria_pedido_s_le (id, pServico);
     //==============================================
 
     // testar se existe stock do servico pedido pelo cliente
     if(prodcons_atualizar_stock(pServico->id) == 0) {
         pServico->disponivel = 0;
-    prodcons_pedido_s_consumir_fim();
+        prodcons_pedido_s_consumir_fim();
         return 2;
     } else
         pServico->disponivel = 1;
@@ -310,7 +335,7 @@ int memoria_pedido_s_le (int id, struct servico *pServico)
 // 
 void memoria_pedido_i_escreve (int id, struct servico *pServico)
 {
-    int pos,instalador;
+    int pos, instalador;
     
     prodcons_pedido_i_produzir_inicio();
     
@@ -321,7 +346,38 @@ void memoria_pedido_i_escreve (int id, struct servico *pServico)
     // ESCREVER PEDIDO NO BUFFER DE PEDIDOS DE INSTALACAO
     //
     // pos - índice do buffer onde o pedido foi escrito
-    pos = so_memoria_pedido_i_escreve (id, pServico, instalador);
+
+    int i;
+    for(i = 0; i < Config.BUFFER_INSTALACAO; i++) {
+        if (BInstalacao.ptr[i] == 0) {
+            BInstalacao.ptr[i] = 1;
+            pos = i;
+            break;
+        }
+    }
+
+    // int id;                         // identificador do tipo de servico pedido
+    // int disponivel;                 // stock: 0 - indisponivel, 1 - disponivel
+    // int cliente;                    // id do cliente que solicitou o servico
+    // int rececionista;               // id do rececionista que atendeu o cliente
+    // int instalador;                 // id do instalador que efetuou o servico
+    // struct timespec hora_servico;   // hora a que o servico foi pedido ao rececionista (registada pelo cliente)
+    // struct timespec hora_instalacao;// hora a que a instalacao foi pedida ao instalador (registada pelo rececionista)
+    // struct timespec hora_conclusao; // hora a que o relatorio foi produzido pelo instalador (registada pelo instalador)
+
+
+    BInstalacao.buffer[pos].id = pServico->id;
+    BInstalacao.buffer[pos].disponivel = pServico->disponivel;
+    BInstalacao.buffer[pos].cliente = pServico->cliente;
+    BInstalacao.buffer[pos].rececionista = pServico->rececionista;
+    BInstalacao.buffer[pos].instalador = instalador;
+    BInstalacao.buffer[pos].hora_instalacao.tv_sec = 50;
+    BInstalacao.buffer[pos].hora_instalacao.tv_nsec = 50;
+    *pServico = BInstalacao.buffer[pos];
+
+    printf("instalador no buffer: %d\n", pServico->instalador);
+
+    // pos = so_memoria_pedido_i_escreve (id, pServico, instalador);
     //==============================================
 
     prodcons_pedido_i_produzir_fim();
@@ -330,7 +386,7 @@ void memoria_pedido_i_escreve (int id, struct servico *pServico)
     controlo_rececionista_submete_pedido(instalador);
 
     // registar hora pedido (instalacao)
-    tempo_registar(&BConclusao.buffer[pos].hora_instalacao);
+    tempo_registar(&BInstalacao.buffer[pos].hora_instalacao);
     
     // log
     ficheiro_escrever_log_ficheiro(3,id);
@@ -357,7 +413,26 @@ int memoria_pedido_i_le (int id, struct servico *pServico)
     //==============================================
     // LER PEDIDO DO BUFFER DE PEDIDOS DE INSTALACAO
     //
-    so_memoria_pedido_i_le (id, pServico);
+
+
+    int counter;
+    for(counter = 0; counter < Config.BUFFER_INSTALACAO; counter++){
+        if(BInstalacao.ptr[counter] == 1){
+            if(BInstalacao.buffer[counter].instalador == id){
+                pServico->id = BInstalacao.buffer[counter].id;
+                pServico->disponivel = BInstalacao.buffer[counter].disponivel;
+                pServico->cliente = BInstalacao.buffer[counter].cliente;
+                pServico->rececionista = BInstalacao.buffer[counter].rececionista;
+                pServico->instalador = BInstalacao.buffer[counter].instalador;
+                pServico->hora_servico = BInstalacao.buffer[counter].hora_servico;
+                BInstalacao.ptr[counter] = 0;
+                break;
+            }
+        }
+    }
+
+
+    // so_memoria_pedido_i_le (id, pServico);
     //==============================================
 
     prodcons_pedido_i_consumir_fim();
@@ -382,6 +457,7 @@ int memoria_pedido_i_le (int id, struct servico *pServico)
 void memoria_relatorio_c_escreve (int id, struct servico *pServico)
 {
     int pos;
+    int i;
 
     prodcons_relatorio_c_produzir_inicio();
 
@@ -389,7 +465,20 @@ void memoria_relatorio_c_escreve (int id, struct servico *pServico)
     // ESCREVER RELATORIO DE CONCLUSAO NO BUFFER DE RELATORIOS DE CONCLUSAO
     //
     // pos - índice do buffer onde o pedido foi escrito 
-    pos = so_memoria_relatorio_c_escreve (id, pServico);
+
+    for(i = 0; i < Config.BUFFER_CONCLUSAO; i++) {
+        if (BConclusao.ptr[i] == 0) {
+            BConclusao.ptr[i] = 1;
+            pos = i;
+            break;
+        }
+    }
+
+    BConclusao.buffer[pos].hora_conclusao.tv_sec = 50;
+    BConclusao.buffer[pos].hora_conclusao.tv_nsec = 50;
+    BConclusao.buffer[pos] = *pServico;
+
+    // pos = so_memoria_relatorio_c_escreve (id, pServico);
     //==============================================
 
     prodcons_relatorio_c_produzir_fim();
@@ -424,6 +513,23 @@ void memoria_relatorio_c_le (int id, struct servico *pServico)
     //==============================================
     // LER RELATORIO DO BUFFER DE RELATORIOS DE CONCLUSAO
     //
+
+    int i;
+    for(i = 0; i < Config.BUFFER_CONCLUSAO; i++){
+        if(BConclusao.ptr[i] == 1){
+            pServico->id = BConclusao.buffer[i].id;
+            pServico->disponivel = BConclusao.buffer[i].disponivel;
+            pServico->cliente = BConclusao.buffer[i].cliente;
+            pServico->rececionista = BConclusao.buffer[i].rececionista;
+            pServico->instalador = BConclusao.buffer[i].instalador;
+            pServico->hora_servico = BConclusao.buffer[i].hora_servico;
+            pServico->hora_instalacao = BConclusao.buffer[i].hora_instalacao;
+            pServico->hora_conclusao = BConclusao.buffer[i].hora_conclusao;
+            BConclusao.ptr[i] = 0;
+            break;
+        }
+    }
+    
     so_memoria_relatorio_c_le (id, pServico);
     //==============================================
 
