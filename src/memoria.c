@@ -90,6 +90,7 @@ void memoria_criar_stock()
 
 
     // char *line = Config.lista_servicos;
+    // printf("nr de serviços: %d\n", Config.SERVICOS);
     // printf("Linha de serviços: %s\n", Config.lista_servicos);
     // printf("Linha de clientes: %s\n", Config.lista_clientes);
     // printf("Linha de recepcionistas: %s\n", Config.lista_rececionistas);
@@ -105,8 +106,10 @@ void memoria_criar_stock()
     //     cur = strtok(NULL, " ");
     // }
     // free(arr);
+    
+    Config.stock = memoria_criar("shm_stock", (sizeof(int) * Config.SERVICOS));
 
-    so_memoria_criar_stock();
+    // so_memoria_criar_stock();
     //==============================================
 }
 
@@ -153,7 +156,10 @@ void memoria_criar_escalonador()
     // CRIAR ZONA DE MEMÓRIA PARA O MAPA DE ESCALONAMENTO
     //
     // utilizar a função genérica memoria_criar(char *,int)
-    so_memoria_criar_escalonador();
+
+    Escalonamento.ptr = memoria_criar("shm_escalonador", (sizeof(int) * Config.SERVICOS * Config.INSTALADORES));
+
+    // so_memoria_criar_escalonador();
     //==============================================
 }
 
@@ -232,7 +238,12 @@ void memoria_pedido_s_escreve (int id, struct servico *pServico)
     //==============================================
     // ESCREVER PEDIDO DE SERVIÇO NO BUFFER PEDIDO DE SERVIÇOS
     //
-    so_memoria_pedido_s_escreve (id, pServico);
+
+    BServico.buffer = &(*pServico);
+    BServico.ptr.in = BServico.ptr.in + 1;
+    // BServico.buffer.cliente = *pServico.cliente;
+
+    // so_memoria_pedido_s_escreve (id, pServico);
     //==============================================
     
     prodcons_pedido_s_produzir_fim();
