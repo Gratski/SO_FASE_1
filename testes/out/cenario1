@@ -1,9 +1,9 @@
-CLIENTE 003 solicitou 3 e obteve 3
-CLIENTE 002 solicitou 2 e obteve 2
-CLIENTE 005 solicitou 5 e obteve 5
 CLIENTE 000 solicitou 0 e obteve 0
 CLIENTE 001 solicitou 1 e obteve 1
 CLIENTE 004 solicitou 4 e obteve 4
+CLIENTE 005 solicitou 5 e obteve 5
+CLIENTE 003 solicitou 3 e obteve 3
+CLIENTE 002 solicitou 2 e obteve 2
 Clientes     : 06
 Rececionistas: 01
 Instaladores : 01

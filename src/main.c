@@ -222,22 +222,23 @@ int main(int argc, char* argv[])
     // Ind.servicos_obtidos_pelos_clientes[n], n=0,1,...
     // com o estado devolvido pela terminação do processo
     int counter;
-    // printf("NUMERO DE CLIENTES: %d\n", Config.CLIENTES);
-    // for(counter = 0; counter < Config.CLIENTES; counter++)
-    // {
-    //     int status;
-    //     waitpid(Ind.pid_clientes[counter], &status, 0);
-    //     Ind.servicos_obtidos_pelos_clientes[counter] += WEXITSTATUS(status);
+    for(counter = 0; counter < Config.CLIENTES; counter++)
+    {
+        int status;
+        waitpid(Ind.pid_clientes[counter], &status, 0);
+        if (WEXITSTATUS(status) != Config.SERVICOS) {
+            Ind.servicos_obtidos_pelos_clientes[WEXITSTATUS(status)]++;
+        }
 
-    // }
-    so_main_wait_clientes();
+    }
+    // so_main_wait_clientes();
     //==============================================
 
     printf("*** Fechar SOinstala\n\n");
     controlo_fechar_soinstala();
 
     //==============================================
-    // ESPERAR PELA TERMINAÇÃO DOS CLIENTES E ATUALIZAR INDICADORES
+    // ESPERAR PELA TERMINAÇÃO DOS RECECIONISTAS E ATUALIZAR INDICADORES
     //
     // esperar e incrementar o indicador de rececionistas
     // Ind.clientes_atendidos_pelos_rececionistas[n], n=0,1,...

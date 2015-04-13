@@ -50,31 +50,31 @@ void * memoria_criar(char * name, int size)
     // FUNÇÃO GENÉRICA DE CRIAÇÃO DE MEMÓRIA PARTILHADA
     //
 
-    // int ret;
-    // int *ptr;
-    // int fd = shm_open(name, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
-    // if(fd == -1){
-    //     perror("Não conseguiu criar memoria_partilhada");
-    //     exit(1);
-    // }
+    int ret;
+    int *ptr;
+    int fd = shm_open(name, O_RDWR|O_CREAT, S_IRUSR|S_IWUSR);
+    if(fd == -1){
+        perror("Não conseguiu criar memoria_partilhada");
+        exit(1);
+    }
 
-    // ret = ftruncate(fd, size);
-    // if (ret == -1){
-    //     perror("Não conseguiu inicializar memoria_partilhada");
-    //     exit(2);
-    // }
+    ret = ftruncate(fd, size);
+    if (ret == -1){
+        perror("Não conseguiu inicializar memoria_partilhada");
+        exit(2);
+    }
 
-    // ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
-    // if (ptr == MAP_FAILED){
-    //     perror("Não devolveu o endereço de memória partilhada");
-    //     exit(3);
-    // } 
+    ptr = mmap(0, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (ptr == MAP_FAILED){
+        perror("Não devolveu o endereço de memória partilhada");
+        exit(3);
+    } 
 
     // printf("------------CRIA---------- %s - %d\n", name, size);
 
-    // return ptr;
+    return ptr;
 
-    return so_memoria_criar(name, size);
+    // return so_memoria_criar(name, size);
     //==============================================
 }
 
@@ -87,25 +87,6 @@ void memoria_criar_stock()
     // CRIAR ZONA DE MEMÓRIA PARA O STOCK DE CADA SERVICO
     //
     // utilizar a função genérica memoria_criar(char *,int)
-
-
-    // char *line = Config.lista_servicos;
-    // printf("nr de serviços: %d\n", Config.SERVICOS);
-    // printf("Linha de serviços: %s\n", Config.lista_servicos);
-    // printf("Linha de clientes: %s\n", Config.lista_clientes);
-    // printf("Linha de recepcionistas: %s\n", Config.lista_rececionistas);
-    // printf("Linha de instaladores: %s\n", Config.lista_instaladores);
-    // char *cur;
-    // int index;
-    // //vector
-    // int *arr = (int *) malloc (sizeof(int) * Config.SERVICOS);
-    // cur = strtok(line, " ");
-    
-    // while(cur != NULL){
-    //     printf("%d\n", (atoi(cur)));
-    //     cur = strtok(NULL, " ");
-    // }
-    // free(arr);
     
     Config.stock = memoria_criar("shm_stock", (sizeof(int) * Config.SERVICOS));
 
@@ -204,14 +185,19 @@ void memoria_destruir()
 
     memoria_terminar("shm_relatorio_c_ptr", BConclusao.ptr, (sizeof(int) * Config.BUFFER_CONCLUSAO));
     memoria_terminar("shm_relatorio_c_buffer", BConclusao.buffer, (sizeof(struct servico) * Config.BUFFER_CONCLUSAO));
+
     memoria_terminar("shm_pedido_i_ptr", BInstalacao.ptr, (sizeof(int) * Config.BUFFER_INSTALACAO));
     memoria_terminar("shm_pedido_i_buffer", BInstalacao.buffer, (sizeof(struct servico) * Config.BUFFER_INSTALACAO));
+    
     memoria_terminar("shm_pedido_s_ptr", BServico.ptr, (sizeof(struct ponteiros) * Config.BUFFER_SERVICO));
     memoria_terminar("shm_pedido_s_buffer", BServico.buffer, (sizeof(struct servico) * Config.BUFFER_SERVICO));
+    
     memoria_terminar("shm_escalonador", Escalonamento.ptr, (sizeof(int) * Config.SERVICOS * Config.INSTALADORES));
     memoria_terminar("shm_stock", Config.stock, (sizeof(int) * Config.SERVICOS));
-    //memoria_terminar("/shm_cond_soinstala", Config.stock, 160);
-    //memoria_terminar("/shm_servicos_instaladores", Config.stock, 24);
+
+
+    memoria_terminar("shm_stock_inicial", Ind.stock_inicial, (sizeof(int) * Config.SERVICOS));
+    memoria_terminar("shm_servicos_instaladores", Ind.servicos_realizados_pelos_instaladores, ( (sizeof(int) * Config.SERVICOS) * Config.INSTALADORES) );
 
     //so_memoria_destruir();
     //==============================================
@@ -239,23 +225,20 @@ void memoria_pedido_s_escreve (int id, struct servico *pServico)
     // ESCREVER PEDIDO DE SERVIÇO NO BUFFER PEDIDO DE SERVIÇOS
     //
     
-
-    time_t mytime;
-    mytime = time(NULL);
-    struct tm * timeinfo = localtime(mytime);
-    printf(timeinfo.tm_sec);
-
-    GETDATE!!
     // printf("Pointer servico1: %d\n", BServico.ptr->in);
+
     BServico.buffer[BServico.ptr->in].id = pServico->id;
     BServico.buffer[BServico.ptr->in].cliente = pServico->cliente;
-    BServico.buffer[BServico.ptr->in].hora_servico.tv_sec = 50;
-    BServico.buffer[BServico.ptr->in].hora_servico.tv_nsec = 50;
 
+    //set pointer position
     *pServico = BServico.buffer[BServico.ptr->in];
 
-    BServico.ptr->in = BServico.ptr->in + 1;
-    // printf("Pointer servico2: %d\n", BServico.ptr->in);
+    int i = (BServico.ptr->in);
+    if (i == (Config.BUFFER_SERVICO) - 1) {
+        BServico.ptr->in = 0;
+    } else {
+        BServico.ptr->in = BServico.ptr->in + 1;
+    }
 
     // so_memoria_pedido_s_escreve (id, pServico);
     //==============================================
@@ -296,25 +279,22 @@ int memoria_pedido_s_le (int id, struct servico *pServico)
 
     
     BServico.buffer[BServico.ptr->out].rececionista = id;
-    BServico.buffer[BServico.ptr->out].hora_servico.tv_sec = 50;
-    BServico.buffer[BServico.ptr->out].hora_servico.tv_nsec = 50;
 
     // pServico->cliente = BServico.buffer[BServico.ptr->out].cliente;
     // pServico->id = BServico.buffer[BServico.ptr->out].id;
     // pServico->disponivel = BServico.buffer[BServico.ptr->out].disponivel;
     // pServico->rececionista = BServico.buffer[BServico.ptr->out].rececionista;
-    // pServico->hora_servico.tv_sec = 50;
-    // pServico->hora_servico.tv_nsec = 50;
 
     *pServico = BServico.buffer[BServico.ptr->out];
 
-    // FAZER CHECK CIRCULAR -> Mandar out para o inicio se estiver no fim do array
-    // find free spot
-    // if(BServico.ptr == Config.BUFFER_SERVICO){
-    //     BServico.ptr->out = BServico.ptr = 0;
-    // }else{
+
+    int i = (BServico.ptr->out);
+    
+    if (i == (Config.BUFFER_SERVICO) - 1) {
+        BServico.ptr->out = 0;
+    } else {
         BServico.ptr->out = BServico.ptr->out + 1;
-    // }
+    }
 
     // so_memoria_pedido_s_le (id, pServico);
     //==============================================
@@ -368,23 +348,11 @@ void memoria_pedido_i_escreve (int id, struct servico *pServico)
         }
     }
 
-    // int id;                         // identificador do tipo de servico pedido
-    // int disponivel;                 // stock: 0 - indisponivel, 1 - disponivel
-    // int cliente;                    // id do cliente que solicitou o servico
-    // int rececionista;               // id do rececionista que atendeu o cliente
-    // int instalador;                 // id do instalador que efetuou o servico
-    // struct timespec hora_servico;   // hora a que o servico foi pedido ao rececionista (registada pelo cliente)
-    // struct timespec hora_instalacao;// hora a que a instalacao foi pedida ao instalador (registada pelo rececionista)
-    // struct timespec hora_conclusao; // hora a que o relatorio foi produzido pelo instalador (registada pelo instalador)
-
-
     BInstalacao.buffer[pos].id = pServico->id;
     BInstalacao.buffer[pos].disponivel = pServico->disponivel;
     BInstalacao.buffer[pos].cliente = pServico->cliente;
     BInstalacao.buffer[pos].rececionista = pServico->rececionista;
     BInstalacao.buffer[pos].instalador = instalador;
-    BInstalacao.buffer[pos].hora_instalacao.tv_sec = 50;
-    BInstalacao.buffer[pos].hora_instalacao.tv_nsec = 50;
     *pServico = BInstalacao.buffer[pos];
 
     // pos = so_memoria_pedido_i_escreve (id, pServico, instalador);
@@ -484,8 +452,6 @@ void memoria_relatorio_c_escreve (int id, struct servico *pServico)
         }
     }
 
-    BConclusao.buffer[pos].hora_conclusao.tv_sec = 50;
-    BConclusao.buffer[pos].hora_conclusao.tv_nsec = 50;
     BConclusao.buffer[pos] = *pServico;
 
     // pos = so_memoria_relatorio_c_escreve (id, pServico);
@@ -513,7 +479,6 @@ void memoria_relatorio_c_escreve (int id, struct servico *pServico)
 // 
 void memoria_relatorio_c_le (int id, struct servico *pServico)
 {
-    int n;
     
     // aguardar relatorio
     controlo_cliente_aguarda_relatorio(pServico->cliente);
@@ -542,7 +507,7 @@ void memoria_relatorio_c_le (int id, struct servico *pServico)
         }
     }
 
-    so_memoria_relatorio_c_le (id, pServico);
+    // so_memoria_relatorio_c_le (id, pServico);
     //==============================================
 
     prodcons_relatorio_c_consumir_fim();
@@ -565,13 +530,39 @@ void memoria_criar_indicadores()
     // para cada campo da estrutura indicadores
     // por exemplo o Ind.pid_clientes tem de ter espaço para todos os pids dos
     // clientes 
-    so_memoria_criar_indicadores();
+    
+    //memoria partilhada para o array de com stock de cada servico e servicos realizados pelos installers
+    Ind.stock_inicial = memoria_criar( "shm_stock_inicial",(sizeof(int) * Config.SERVICOS));
+    Ind.servicos_realizados_pelos_instaladores = memoria_criar( "shm_servicos_instaladores" ,((sizeof(int) * Config.SERVICOS) * Config.INSTALADORES) );
+
+    //reserva de memoria dinamica para pids e outros arrays de inteiros
+    Ind.pid_clientes = (int *) malloc (sizeof(int) * Config.CLIENTES);
+    Ind.pid_rececionistas = (int *) malloc (sizeof(int) * Config.RECECIONISTAS);
+    Ind.pid_instaladores = (int *) malloc (sizeof(int) * Config.INSTALADORES);
+    Ind.clientes_atendidos_pelos_rececionistas = (int *) calloc (sizeof(int), Config.RECECIONISTAS);
+    Ind.clientes_atendidos_pelos_instaladores = (int *) calloc (sizeof(int), Config.INSTALADORES);
+    Ind.servicos_obtidos_pelos_clientes = (int *) calloc  (sizeof(int) , (Config.SERVICOS * Config.CLIENTES) );
+    
+    //so_memoria_criar_indicadores();
+
     // iniciar indicadores relevantes:
     // - Ind.stock_inicial
     // - Ind.clientes_atendidos_pelos_rececionistas
     // - Ind.clientes_atendidos_pelos_instaladores
     // - Ind.servicos_obtidos_pelos_clientes
-    so_memoria_iniciar_indicadores();
+    
+    //inicializar indicador de stock com configuracao inicial
+    int i;
+    for(i = 0; i < Config.SERVICOS; i++){
+        Ind.stock_inicial[i] = Config.stock[i];     
+    }
+    int j;
+    for(i = 0; i < Config.SERVICOS; i++){
+        for(j = 0; j < Config.INSTALADORES; j++){
+            Ind.servicos_realizados_pelos_instaladores[i * Config.INSTALADORES + j] = 0;
+        }
+    }
+    
+    //so_memoria_iniciar_indicadores();
     //==============================================
 }
-

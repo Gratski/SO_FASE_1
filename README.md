@@ -19,7 +19,6 @@
 
 
 ##### FALTA:
-- Por horas bem
 - criar_indicadores
 - por cena circular
 - por contagem final de instalações a funcionar
