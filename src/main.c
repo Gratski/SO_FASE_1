@@ -223,14 +223,14 @@ int main(int argc, char* argv[])
     // com o estado devolvido pela terminação do processo
     int counter;
     // printf("NUMERO DE CLIENTES: %d\n", Config.CLIENTES);
-    for(counter = 0; counter < Config.CLIENTES; counter++)
-    {
-        int status;
-        waitpid(Ind.pid_clientes[counter], &status, 0);
-        Ind.servicos_obtidos_pelos_clientes[counter] += WEXITSTATUS(status);
+    // for(counter = 0; counter < Config.CLIENTES; counter++)
+    // {
+    //     int status;
+    //     waitpid(Ind.pid_clientes[counter], &status, 0);
+    //     Ind.servicos_obtidos_pelos_clientes[counter] += WEXITSTATUS(status);
 
-    }
-    //so_main_wait_clientes();
+    // }
+    so_main_wait_clientes();
     //==============================================
 
     printf("*** Fechar SOinstala\n\n");
@@ -248,7 +248,7 @@ int main(int argc, char* argv[])
         waitpid(Ind.pid_rececionistas[counter], &status, 0);
         Ind.clientes_atendidos_pelos_rececionistas[counter] += WEXITSTATUS(status);
     }
-    //so_main_wait_rececionistas();
+    // so_main_wait_rececionistas();
     //==============================================
 
     //==============================================
@@ -263,7 +263,7 @@ int main(int argc, char* argv[])
         waitpid(Ind.pid_instaladores[counter], &status, 0);
         Ind.clientes_atendidos_pelos_instaladores[counter] += WEXITSTATUS(status);
     }
-    //so_main_wait_instaladores();
+    // so_main_wait_instaladores();
     //==============================================
 
     printf("*** Indicadores\n");

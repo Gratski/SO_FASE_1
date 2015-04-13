@@ -239,9 +239,21 @@ void memoria_pedido_s_escreve (int id, struct servico *pServico)
     // ESCREVER PEDIDO DE SERVIÇO NO BUFFER PEDIDO DE SERVIÇOS
     //
     
+
+    time_t mytime;
+    mytime = time(NULL);
+    struct tm * timeinfo = localtime(mytime);
+    printf(timeinfo.tm_sec);
+
+    GETDATE!!
     // printf("Pointer servico1: %d\n", BServico.ptr->in);
     BServico.buffer[BServico.ptr->in].id = pServico->id;
     BServico.buffer[BServico.ptr->in].cliente = pServico->cliente;
+    BServico.buffer[BServico.ptr->in].hora_servico.tv_sec = 50;
+    BServico.buffer[BServico.ptr->in].hora_servico.tv_nsec = 50;
+
+    *pServico = BServico.buffer[BServico.ptr->in];
+
     BServico.ptr->in = BServico.ptr->in + 1;
     // printf("Pointer servico2: %d\n", BServico.ptr->in);
 
@@ -374,8 +386,6 @@ void memoria_pedido_i_escreve (int id, struct servico *pServico)
     BInstalacao.buffer[pos].hora_instalacao.tv_sec = 50;
     BInstalacao.buffer[pos].hora_instalacao.tv_nsec = 50;
     *pServico = BInstalacao.buffer[pos];
-
-    printf("instalador no buffer: %d\n", pServico->instalador);
 
     // pos = so_memoria_pedido_i_escreve (id, pServico, instalador);
     //==============================================
@@ -517,19 +527,21 @@ void memoria_relatorio_c_le (int id, struct servico *pServico)
     int i;
     for(i = 0; i < Config.BUFFER_CONCLUSAO; i++){
         if(BConclusao.ptr[i] == 1){
-            pServico->id = BConclusao.buffer[i].id;
-            pServico->disponivel = BConclusao.buffer[i].disponivel;
-            pServico->cliente = BConclusao.buffer[i].cliente;
-            pServico->rececionista = BConclusao.buffer[i].rececionista;
-            pServico->instalador = BConclusao.buffer[i].instalador;
-            pServico->hora_servico = BConclusao.buffer[i].hora_servico;
-            pServico->hora_instalacao = BConclusao.buffer[i].hora_instalacao;
-            pServico->hora_conclusao = BConclusao.buffer[i].hora_conclusao;
-            BConclusao.ptr[i] = 0;
-            break;
+            if (BConclusao.buffer[i].cliente == id) { 
+                pServico->id = BConclusao.buffer[i].id;
+                pServico->disponivel = BConclusao.buffer[i].disponivel;
+                pServico->cliente = BConclusao.buffer[i].cliente;
+                pServico->rececionista = BConclusao.buffer[i].rececionista;
+                pServico->instalador = BConclusao.buffer[i].instalador;
+                pServico->hora_servico = BConclusao.buffer[i].hora_servico;
+                pServico->hora_instalacao = BConclusao.buffer[i].hora_instalacao;
+                pServico->hora_conclusao = BConclusao.buffer[i].hora_conclusao;
+                BConclusao.ptr[i] = 0;
+                break;
+            }
         }
     }
-    
+
     so_memoria_relatorio_c_le (id, pServico);
     //==============================================
 
