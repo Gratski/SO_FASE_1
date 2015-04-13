@@ -1,0 +1,4 @@
+.vagrant/*
+.DS_STORE
+bin/*
+obj/*
