@@ -122,7 +122,7 @@ void memoria_criar_buffers()
     BInstalacao.ptr = memoria_criar("shm_pedido_i_ptr", (sizeof(int) * Config.BUFFER_INSTALACAO));
 
     BServico.buffer = memoria_criar("shm_pedido_s_buffer", (size_servico * Config.BUFFER_CONCLUSAO));
-    BServico.ptr = memoria_criar("shm_pedido_s_ptr", (sizeof(int) * 2));
+    BServico.ptr = memoria_criar("shm_pedido_s_ptr", (sizeof(struct ponteiros)));
 
     // so_memoria_criar_buffers();
     //==============================================
@@ -199,6 +199,13 @@ void memoria_destruir()
     memoria_terminar("shm_stock_inicial", Ind.stock_inicial, (sizeof(int) * Config.SERVICOS));
     memoria_terminar("shm_servicos_instaladores", Ind.servicos_realizados_pelos_instaladores, ( (sizeof(int) * Config.SERVICOS) * Config.INSTALADORES) );
 
+
+    free(Ind.pid_clientes);
+    free(Ind.pid_rececionistas);
+    free(Ind.clientes_atendidos_pelos_rececionistas);
+    free(Ind.clientes_atendidos_pelos_instaladores);
+    free(Ind.servicos_obtidos_pelos_clientes);
+
     //so_memoria_destruir();
     //==============================================
 }
@@ -230,9 +237,9 @@ void memoria_pedido_s_escreve (int id, struct servico *pServico)
     BServico.buffer[BServico.ptr->in].id = pServico->id;
     BServico.buffer[BServico.ptr->in].cliente = pServico->cliente;
 
-    //set pointer position
     *pServico = BServico.buffer[BServico.ptr->in];
 
+    //set pointer position
     int i = (BServico.ptr->in);
     if (i == (Config.BUFFER_SERVICO) - 1) {
         BServico.ptr->in = 0;
@@ -287,13 +294,12 @@ int memoria_pedido_s_le (int id, struct servico *pServico)
 
     *pServico = BServico.buffer[BServico.ptr->out];
 
-
+    //set pointer position
     int i = (BServico.ptr->out);
-    
     if (i == (Config.BUFFER_SERVICO) - 1) {
         BServico.ptr->out = 0;
     } else {
-        BServico.ptr->out = BServico.ptr->out + 1;
+        BServico.ptr->out += 1;
     }
 
     // so_memoria_pedido_s_le (id, pServico);
@@ -556,12 +562,7 @@ void memoria_criar_indicadores()
     for(i = 0; i < Config.SERVICOS; i++){
         Ind.stock_inicial[i] = Config.stock[i];     
     }
-    int j;
-    for(i = 0; i < Config.SERVICOS; i++){
-        for(j = 0; j < Config.INSTALADORES; j++){
-            Ind.servicos_realizados_pelos_instaladores[i * Config.INSTALADORES + j] = 0;
-        }
-    }
+    
     
     //so_memoria_iniciar_indicadores();
     //==============================================

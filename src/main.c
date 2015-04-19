@@ -171,15 +171,15 @@ int main(int argc, char* argv[])
         printf("Como usar: ./soinstala ../testes/in/cenario1 ../testes/out/cenario1 -l cenario1.log -t 1000\n");
         exit(1);
     }
-    if(argc > 2){
+    else if(argc > 2){
         ficEntrada = argv[1];       //ficheiro de config
         ficSaida = argv[2];     //ficheiro de output
         ficLog = argv[4];       //ficheiro de logs
         intervalo = atoi(argv[6]);  //intervalo
-    }else if(argc == 2){
+    }else{
         ficEntrada = argv[1];
     }
-    intervalo = so_main_args(argc, argv, &ficEntrada, &ficSaida, &ficLog);
+    /*intervalo = so_main_args(argc, argv, &ficEntrada, &ficSaida, &ficLog);*/
     //==============================================
 
     printf("\n---------------------------");
